@@ -78,7 +78,7 @@ function getVCard() {
     if (company) vcard += `ORG:${company}\n`;
     if (email) vcard += `EMAIL:${email}\n`;
     if (phone) vcard += `TEL:${phone}\n`;
-     if (phone2) vcard += `TEL:${phone2}\n`;
+    if (phone2) vcard += `TEL:${phone2}\n`;
     vcard += "END:VCARD";
     return vcard;
 }
@@ -88,7 +88,7 @@ function updateContactPreview() {
     const name = document.getElementById('contactName').value;
     const email = document.getElementById('contactEmail').value;
     const phone = document.getElementById('contactPhone').value;
-     const phone2 = document.getElementById('contactPhone2').value;
+    const phone2 = document.getElementById('contactPhone2').value;
     const company = document.getElementById('contactCompany').value;
     previewPanel.innerHTML = `
     <strong>Nom:</strong> ${name || '-'}<br>
@@ -115,7 +115,7 @@ function generateQR(data, color, bg, size, label) {
 }
 
 // Gestion dynamique QR
-['contactName', 'contactEmail', 'contactPhone','contactPhone2', 'contactCompany'].forEach(id => {
+['contactName', 'contactEmail', 'contactPhone', 'contactPhone2', 'contactCompany'].forEach(id => {
     document.getElementById(id).addEventListener('input', () => {
         updateContactPreview();
         if (currentType === "contact") {
@@ -150,9 +150,11 @@ qrForm.onsubmit = function (e) {
     let data;
     if (currentType === "website") {
         data = document.getElementById('websiteUrl').value;
+        // 
         if (data) generateQR(data, qrColor.value, bgColor.value, parseInt(qrSizeInput.value), labelInput.value);
     } else {
         data = getVCard();
+       // console.log("DATA card", data);
         generateQR(data, qrColor.value, bgColor.value, parseInt(qrSizeInput.value), labelInput.value);
     }
     qrForm.classList.add('was-validated');
@@ -197,7 +199,7 @@ document.getElementById('downloadImg').onclick = () => {
             ctx.textAlign = "center";
             ctx.fillText(labelInput.value, size / 2, size + 26);
         }
-        canvas.toBlob(blob => saveAs(blob, "qrcode-labellise.png"));
+        canvas.toBlob(blob => saveAs(blob, "QRcode SMART-TECH.png"));
     } else {
         // canvas
         const size = parseInt(qrSizeInput.value);
@@ -214,7 +216,7 @@ document.getElementById('downloadImg').onclick = () => {
             ctx.textAlign = "center";
             ctx.fillText(labelInput.value, size / 2, size + 26);
         }
-        c2.toBlob(blob => saveAs(blob, "qrcode-labellise.png"));
+        c2.toBlob(blob => saveAs(blob, "QRcode SMART-TECH.png"));
     }
 };
 // Export PDF
@@ -242,7 +244,7 @@ document.getElementById('downloadPdf').onclick = () => {
         pdf.setFontSize(18);
         pdf.text(labelInput.value, size / 2 + 30, size + 50, { align: 'center' });
     }
-    pdf.save('qrcode-labellise.pdf');
+    pdf.save('QRcodeSMART-TECH.pdf');
 };
 // Initialisation
 setType('website');
