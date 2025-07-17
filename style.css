@@ -1,0 +1,25 @@
+:root {
+  --main-bg: #f3f5f7;
+  --primary: #6b47dc;
+  --accent: #0abde3;
+  --text: #222831;
+  --input-bg: #fff;
+}
+#qrcode {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--input-bg);
+  border-radius: 12px;
+  margin: auto;
+  box-shadow: 0 0 30px #0002;
+  padding: 16px;
+}
+#labelDisplay {
+  text-align: center;
+  color: var(--primary);
+  word-break: break-word;
+}
+@media (max-width:600px) {
+  #qrcode { padding: 8px; }
+}
