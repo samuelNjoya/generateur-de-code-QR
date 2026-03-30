@@ -1,10 +1,33 @@
 :root {
     --main-bg: #f3f5f7;
-    --primary: #6b47dc;
+    --primary: #3498db;
     --accent: #0abde3;
     --text: #222831;
     --input-bg: #fff;
 }
+
+.btn-primary {
+    background-color: var(--primary);
+    color: var(--input-bg);
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+/* input{
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+input:focus{
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+} */
 
 #qrcode {
     display: flex;
