@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+npimport { useState, useCallback, useRef, useEffect } from 'react'
 import QRCode from 'qrcode'
 import { getECL } from '../utils/helpers'
 
