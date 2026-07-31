@@ -50,4 +50,4 @@ La barre de navigation du bas (Bottom Navigation) doit contenir exactement 4 ong
 3. **Ne générer le code qu'après la confirmation de l'utilisateur.**
 
 
-npm install html5-qrcode vite-plugin-pwa
+npm install html5-qrcode vite-plugin-pwa (important)
