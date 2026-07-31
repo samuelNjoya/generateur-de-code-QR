@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { AlertTriangle } from 'lucide-react'
-import { normalizeUrl, isValidUrl, buildVCard, buildWhatsAppUrl, buildWifiString, buildGeoUrl, buildVEvent, COUNTRY_CODES } from '../utils/helpers'
+import { normalizeUrl, isValidUrl, buildVCard, buildWhatsAppUrl, buildWifiString, buildGeoUrl, buildVEvent, buildMailto, COUNTRY_CODES } from '../utils/helpers'
 
 // ── Web Link ─────────────────────────────────────────────────────────────────
 export function WebLinkForm({ onChange }) {
@@ -271,6 +271,61 @@ export function EventForm({ onChange }) {
       <div className="field">
         <label className="label">Description</label>
         <textarea placeholder="Ordre du jour, informations supplémentaires..." value={form.description} onChange={e => update('description', e.target.value)} />
+      </div>
+    </div>
+  )
+}
+
+// ── Email ────────────────────────────────────────────────────────────────────
+export function EmailForm({ onChange }) {
+  const [form, setForm] = useState({ to: '', subject: '', body: '' })
+
+  const update = (key, val) => {
+    const next = { ...form, [key]: val }
+    setForm(next)
+    onChange(next.to ? buildMailto(next) : '')
+  }
+
+  return (
+    <div>
+      <div className="field">
+        <label className="label">Destinataire *</label>
+        <input type="email" placeholder="contact@entreprise.com" value={form.to} onChange={e => update('to', e.target.value)} />
+      </div>
+      <div className="field">
+        <label className="label">Objet</label>
+        <input placeholder="Demande d'information" value={form.subject} onChange={e => update('subject', e.target.value)} />
+      </div>
+      <div className="field">
+        <label className="label">Corps du message</label>
+        <textarea placeholder="Bonjour, je souhaiterais..." value={form.body} onChange={e => update('body', e.target.value)} />
+      </div>
+    </div>
+  )
+}
+
+// ── Mobile Money / USSD ──────────────────────────────────────────────────────
+export function USSDForm({ onChange }) {
+  const [code, setCode] = useState('')
+
+  const update = (val) => {
+    setCode(val)
+    onChange(val.trim())
+  }
+
+  return (
+    <div>
+      <div className="field">
+        <label className="label">Expression USSD *</label>
+        <input
+          placeholder="#150*11*5000*numero#"
+          value={code}
+          onChange={e => update(e.target.value)}
+          style={{ fontFamily: 'var(--font-mono)' }}
+        />
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: 4 }}>
+          Le QR encodera cette chaîne exacte, composée automatiquement à la lecture.
+        </p>
       </div>
     </div>
   )

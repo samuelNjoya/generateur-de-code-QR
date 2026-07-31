@@ -1,7 +1,8 @@
 import { useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Download, Share2, FileText, Loader } from 'lucide-react'
-import { svgToPngBlob, downloadBlob, exportPdf } from '../utils/helpers'
+import { svgToPngBlob, svgToPngBlobWithTitle, downloadBlob, exportPdf } from '../utils/helpers'
+import BreathSpinner from './ui/BreathSpinner'
 
 function QRPreview({ svgString, title, isGenerating, onShare }) {
   const containerRef = useRef(null)
@@ -12,7 +13,7 @@ function QRPreview({ svgString, title, isGenerating, onShare }) {
     const svgEl = getSvgEl()
     if (!svgEl) return
     try {
-      const blob = await svgToPngBlob(svgEl, 2000)
+      const blob = await svgToPngBlobWithTitle(svgEl, title, 2000)
       downloadBlob(blob, `${title || 'QR'}_2000px.png`)
     } catch (e) { console.error(e) }
   }, [title])
@@ -39,8 +40,21 @@ function QRPreview({ svgString, title, isGenerating, onShare }) {
 
   return (
     <div className="qr-preview-wrapper">
+      {/* Title display — above the preview, visible to whoever scans the printed/exported QR */}
+      <AnimatePresence>
+        {title && (svgString || isGenerating) && (
+          <motion.div className="qr-title-display"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 6 }}>
+            {title}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* QR Display */}
       <div className="qr-display" ref={containerRef}>
+        {isGenerating && <BreathSpinner />}
         <AnimatePresence mode="wait">
           {isGenerating ? (
             <motion.div key="loading" className="qr-loading"
@@ -69,18 +83,6 @@ function QRPreview({ svgString, title, isGenerating, onShare }) {
           )}
         </AnimatePresence>
       </div>
-
-      {/* Title display */}
-      <AnimatePresence>
-        {title && svgString && (
-          <motion.div className="qr-title-display"
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}>
-            {title}
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Actions */}
       <AnimatePresence>

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, Palette, Image, Trash2, AlertTriangle } from 'lucide-react'
+import { ChevronDown, Palette, Image, Trash2, AlertTriangle, Lock } from 'lucide-react'
 import { contrastWarning, getECL } from '../utils/helpers'
 
 const MODULE_SHAPES = [
@@ -15,9 +15,10 @@ const EYE_SHAPES = [
   { id: 'circle', label: 'Cercle' },
 ]
 
-function CustomizationPanel({ style, onStyleChange, onLogoChange, logo, data }) {
+function CustomizationPanel({ style, onStyleChange, onLogoChange, logo, data, password, onPasswordChange }) {
   const [open, setOpen] = useState(false)
   const [dragging, setDragging] = useState(false)
+  const [showPass, setShowPass] = useState(false)
 
   const ecl = getECL(data || '', !!logo)
   const warning = contrastWarning(style.fgColor, style.bgColor)
@@ -160,6 +161,31 @@ function CustomizationPanel({ style, onStyleChange, onLogoChange, logo, data }) 
                 )}
                 <input id="logo-upload" type="file" accept="image/*" style={{ display: 'none' }}
                   onChange={e => handleLogoUpload(e.target.files[0])} />
+              </div>
+
+              {/* Password protection */}
+              <div className="field">
+                <label className="label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Lock size={13} strokeWidth={1.5} /> Protéger par mot de passe
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type={showPass ? 'text' : 'password'}
+                    placeholder="Laisser vide pour ne pas protéger"
+                    value={password || ''}
+                    onChange={e => onPasswordChange(e.target.value)}
+                    style={{ paddingRight: 44 }}
+                  />
+                  <button onClick={() => setShowPass(v => !v)}
+                    style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-3)', fontSize: '0.75rem' }}>
+                    {showPass ? 'Cacher' : 'Voir'}
+                  </button>
+                </div>
+                {password && (
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: 4 }}>
+                    🔒 Le contenu sera chiffré localement. Il faudra ce mot de passe pour le révéler au scan.
+                  </p>
+                )}
               </div>
 
               {/* ECL info */}

@@ -176,6 +176,38 @@ export function svgToPngBlob(svgEl, size = 2000) {
   })
 }
 
+// Same as svgToPngBlob but reserves a header band to print the QR title above
+// the code — used only when a title is present, to preserve exact pixel
+// output of svgToPngBlob for existing/untitled exports.
+export function svgToPngBlobWithTitle(svgEl, title, size = 2000) {
+  if (!title) return svgToPngBlob(svgEl, size)
+  return new Promise((resolve, reject) => {
+    const svgData = new XMLSerializer().serializeToString(svgEl)
+    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const img = new Image()
+    img.onload = () => {
+      const titleH = Math.round(size * 0.09)
+      const canvas = document.createElement('canvas')
+      canvas.width = size
+      canvas.height = size + titleH
+      const ctx = canvas.getContext('2d')
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      ctx.fillStyle = '#1a1a1a'
+      ctx.font = `600 ${Math.round(titleH * 0.4)}px 'DM Sans', system-ui, sans-serif`
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(title, canvas.width / 2, titleH / 2, canvas.width * 0.92)
+      ctx.drawImage(img, 0, titleH, size, size)
+      URL.revokeObjectURL(url)
+      canvas.toBlob(resolve, 'image/png', 1.0)
+    }
+    img.onerror = reject
+    img.src = url
+  })
+}
+
 export function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -216,4 +248,76 @@ export async function exportPdf(svgEl, title = 'QR Code') {
     }
     img.src = url
   })
+}
+
+// ── Email (mailto) ───────────────────────────────────────────────────────────
+export function buildMailto({ to, subject, body }) {
+  const params = []
+  if (subject) params.push(`subject=${encodeURIComponent(subject)}`)
+  if (body) params.push(`body=${encodeURIComponent(body)}`)
+  const query = params.length ? `?${params.join('&')}` : ''
+  return `mailto:${to || ''}${query}`
+}
+
+// ── Scanned content parsing (for the Scanner tab) ───────────────────────────
+function parseVCardFields(raw) {
+  const fields = []
+  const get = (re) => (raw.match(re) || [])[1]
+  const fn = get(/FN:(.+)/)
+  const org = get(/ORG:(.+)/)
+  const title = get(/TITLE:(.+)/)
+  const email = get(/EMAIL[^:]*:(.+)/)
+  const tels = [...raw.matchAll(/TEL[^:]*:(.+)/g)].map(m => m[1])
+  if (fn) fields.push({ label: 'Nom', value: fn })
+  if (org) fields.push({ label: 'Organisation', value: org })
+  if (title) fields.push({ label: 'Fonction', value: title })
+  if (email) fields.push({ label: 'Email', value: email })
+  tels.forEach((t, i) => fields.push({ label: i === 0 ? 'Téléphone' : 'Téléphone 2', value: t }))
+  return fields
+}
+
+function parseWifiFields(raw) {
+  const get = (re) => (raw.match(re) || [])[1]
+  const ssid = (get(/S:((?:[^\\;]|\\.)*);/) || '').replace(/\\(.)/g, '$1')
+  const password = (get(/P:((?:[^\\;]|\\.)*);/) || '').replace(/\\(.)/g, '$1')
+  const security = get(/T:([^;]*);/)
+  return [
+    { label: 'Réseau (SSID)', value: ssid },
+    { label: 'Sécurité', value: security || 'Ouvert' },
+    { label: 'Mot de passe', value: password || '—' },
+  ]
+}
+
+export function parseScannedData(raw) {
+  const data = (raw || '').trim()
+
+  if (/^BEGIN:VCARD/i.test(data)) {
+    return { type: 'vcard', title: 'Contact', fields: parseVCardFields(data), raw: data }
+  }
+  if (/^WIFI:/i.test(data)) {
+    return { type: 'wifi', title: 'Réseau WiFi', fields: parseWifiFields(data), raw: data }
+  }
+  if (/^BEGIN:VCALENDAR/i.test(data)) {
+    const summary = (data.match(/SUMMARY:(.+)/) || [])[1]
+    return { type: 'event', title: 'Événement', fields: summary ? [{ label: 'Titre', value: summary }] : [], raw: data }
+  }
+  if (/^geo:/i.test(data)) {
+    return { type: 'gps', title: 'Position GPS', fields: [{ label: 'Coordonnées', value: data.replace('geo:', '') }], raw: data }
+  }
+  if (/^mailto:/i.test(data)) {
+    return { type: 'email', title: 'Email', fields: [{ label: 'Destinataire', value: data.replace('mailto:', '').split('?')[0] }], raw: data }
+  }
+  if (/^https:\/\/wa\.me\//i.test(data)) {
+    return { type: 'whatsapp', title: 'WhatsApp', fields: [{ label: 'Numéro', value: data.replace('https://wa.me/', '').split('?')[0] }], raw: data }
+  }
+  if (/^tel:/i.test(data)) {
+    return { type: 'phone', title: 'Numéro de téléphone', fields: [{ label: 'Numéro', value: data.replace('tel:', '') }], raw: data }
+  }
+  if (/^[#*][\d*#]*#$/.test(data)) {
+    return { type: 'ussd', title: 'Code Mobile Money (USSD)', fields: [{ label: 'Expression', value: data }], raw: data }
+  }
+  if (/^https?:\/\//i.test(data)) {
+    return { type: 'url', title: 'Lien', fields: [{ label: 'URL', value: data }], raw: data }
+  }
+  return { type: 'text', title: 'Texte', fields: [{ label: 'Contenu', value: data }], raw: data }
 }
