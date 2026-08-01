@@ -1,4 +1,4 @@
-// One-off / repeatable script: rasterizes public/icon.svg into the real PNG
+// One-off / repeatable script: rasterizes public/icon.png into the real PNG
 // icon sizes required by the PWA manifest (Android/iOS reliably support PNG
 // icons; SVG-only manifests are a known cause of "installs but won't launch
 // standalone" bugs on several Android WebView versions).
@@ -11,7 +11,7 @@ import sharp from 'sharp'
 
 const root = path.dirname(fileURLToPath(import.meta.url))
 const publicDir = path.join(root, '..', 'public')
-const svgPath = path.join(publicDir, 'icon.svg')
+const svgPath = path.join(publicDir, 'icon.png')
 const svgBuffer = readFileSync(svgPath)
 
 const targets = [
