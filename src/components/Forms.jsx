@@ -330,3 +330,28 @@ export function USSDForm({ onChange }) {
     </div>
   )
 }
+
+// ── Texte libre ──────────────────────────────────────────────────────────────
+export function TextForm({ onChange }) {
+  const [text, setText] = useState('')
+
+  const update = (val) => {
+    setText(val)
+    onChange(val.trim())
+  }
+
+  return (
+    <div>
+      <div className="field">
+        <label className="label">Contenu texte *</label>
+        <textarea
+          placeholder="Écrivez ici le texte à encoder dans le QR code…"
+          value={text}
+          onChange={e => update(e.target.value)}
+          style={{ minHeight: 140 }}
+        />
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: 4 }}>{text.length} caractères</p>
+      </div>
+    </div>
+  )
+}

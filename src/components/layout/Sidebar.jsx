@@ -1,10 +1,10 @@
-import { Sun, Moon } from 'lucide-react'
+import { Sun, Moon, QrCode } from 'lucide-react'
 
 function Sidebar({ tabs, active, onChange, theme, onToggleTheme }) {
   return (
     <aside className="shell-sidebar-desktop">
       <div className="sidebar-brand">
-        <span className="app-logo-icon">⬛</span>
+        <span className="app-logo-icon"><QrCode size={18} strokeWidth={2} /></span>
         <span className="app-name">QR<strong>Pro</strong></span>
       </div>
 

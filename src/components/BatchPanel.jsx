@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Download, Package, Loader } from 'lucide-react'
+import { Download, Loader } from 'lucide-react'
 import QRCode from 'qrcode'
+import JSZip from 'jszip'
 import { svgToPngBlob } from '../utils/helpers'
 
 async function generateQRSvg(data) {
@@ -13,7 +14,6 @@ async function generateQRSvg(data) {
 }
 
 function BatchPanel() {
-  const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
   const [generating, setGenerating] = useState(false)
   const [done, setDone] = useState(false)
@@ -25,7 +25,6 @@ function BatchPanel() {
     setGenerating(true)
     setDone(false)
     try {
-      const JSZip = (await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js')).default
       const zip = new JSZip()
 
       for (let i = 0; i < lines.length; i++) {
@@ -47,6 +46,7 @@ function BatchPanel() {
       URL.revokeObjectURL(url)
       setDone(true)
     } catch (err) {
+      console.error(err)
       // Fallback: download individual SVGs
       for (let i = 0; i < Math.min(lines.length, 5); i++) {
         const svgStr = await generateQRSvg(lines[i])
@@ -63,42 +63,30 @@ function BatchPanel() {
 
   return (
     <div>
-      <div className="divider" />
-      <div className="collapse-header" onClick={() => setOpen(v => !v)}>
-        <span className="collapse-label">
-          <Package size={15} strokeWidth={1.5} />
-          Génération Batch
-          <span className="badge">Multi QR</span>
-        </span>
+      <div className="field">
+        <label className="label">Un lien / texte par ligne ({lines.length} entrées)</label>
+        <textarea
+          placeholder={"https://site1.com\nhttps://site2.com\nhttps://site3.com"}
+          value={text}
+          onChange={e => setText(e.target.value)}
+          style={{ minHeight: 160, fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}
+        />
       </div>
-
-      {open && (
-        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} style={{ paddingBottom: 16 }}>
-          <div className="field">
-            <label className="label">Un lien / texte par ligne ({lines.length} entrées)</label>
-            <textarea
-              placeholder={"https://site1.com\nhttps://site2.com\nhttps://site3.com"}
-              value={text}
-              onChange={e => setText(e.target.value)}
-              style={{ minHeight: 120, fontFamily: 'var(--font-mono)', fontSize: '0.8125rem' }}
-            />
-          </div>
-          <button
-            className="btn-primary"
-            style={{ width: '100%', marginTop: 4 }}
-            onClick={handleGenerate}
-            disabled={!lines.length || generating}>
-            {generating
-              ? <><Loader size={15} className="spin" /> Génération en cours...</>
-              : <><Download size={15} strokeWidth={1.5} /> Générer & télécharger ZIP ({lines.length})</>
-            }
-          </button>
-          {done && (
-            <p style={{ fontSize: '0.8125rem', color: 'var(--green)', textAlign: 'center', marginTop: 8 }}>
-              ✓ {lines.length} QR codes générés avec succès
-            </p>
-          )}
-        </motion.div>
+      <button
+        className="btn-primary"
+        style={{ width: '100%', marginTop: 4 }}
+        onClick={handleGenerate}
+        disabled={!lines.length || generating}>
+        {generating
+          ? <><Loader size={15} className="spin" /> Génération en cours...</>
+          : <><Download size={15} strokeWidth={1.5} /> Générer & télécharger ZIP ({lines.length})</>
+        }
+      </button>
+      {done && (
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          style={{ fontSize: '0.8125rem', color: 'var(--green)', textAlign: 'center', marginTop: 10 }}>
+          ✓ {lines.length} QR codes générés avec succès
+        </motion.p>
       )}
     </div>
   )

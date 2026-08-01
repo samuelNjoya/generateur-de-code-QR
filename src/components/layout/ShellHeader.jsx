@@ -1,10 +1,13 @@
-import { Sun, Moon } from 'lucide-react'
+import { Sun, Moon, QrCode } from 'lucide-react'
 
 function ShellHeader({ mobileTitle, desktopTitle, desktopSub, theme, onToggleTheme }) {
   return (
     <>
       <header className="shell-header-mobile">
-        <span className="shell-title-mobile">{mobileTitle}</span>
+        <span className="shell-title-mobile">
+          <span className="app-logo-icon app-logo-icon-sm"><QrCode size={15} strokeWidth={2} /></span>
+          {mobileTitle}
+        </span>
         <button className="btn-icon" onClick={onToggleTheme}>
           {theme === 'dark' ? <Sun size={16} strokeWidth={1.5} /> : <Moon size={16} strokeWidth={1.5} />}
         </button>

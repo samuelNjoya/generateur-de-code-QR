@@ -102,18 +102,59 @@ export function getECL(data, hasLogo) {
 }
 
 // ── History (localStorage) ───────────────────────────────────────────────────
+// Saving is now explicit (user clicks "Enregistrer"): no auto-save, no
+// artificial cap — the user may keep as many QR codes as they want.
 const HISTORY_KEY = 'qrpro_history'
 
-export function saveToHistory(entry) {
-  try {
-    const list = getHistory()
-    const updated = [{ ...entry, savedAt: Date.now() }, ...list.filter(h => h.data !== entry.data)].slice(0, 10)
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(updated))
-  } catch (_) {}
+function makeId() {
+  return (crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`)
 }
 
 export function getHistory() {
-  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]') } catch { return [] }
+  try {
+    const list = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]')
+    // Migration: assign a stable id to entries saved before ids existed.
+    let migrated = false
+    const withIds = list.map(item => {
+      if (item.id) return item
+      migrated = true
+      return { ...item, id: makeId() }
+    })
+    if (migrated) localStorage.setItem(HISTORY_KEY, JSON.stringify(withIds))
+    return withIds
+  } catch {
+    return []
+  }
+}
+
+// Creates a new history entry, or updates an existing one in place when
+// `updateId` matches an entry already in the list (used when editing a saved
+// QR from the catalogue rather than duplicating it).
+export function saveToHistory(entry, updateId = null) {
+  try {
+    const list = getHistory()
+    if (updateId) {
+      const idx = list.findIndex(h => h.id === updateId)
+      if (idx !== -1) {
+        const updated = [...list]
+        updated[idx] = { ...updated[idx], ...entry, id: updateId, savedAt: Date.now() }
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(updated))
+        return updated[idx]
+      }
+    }
+    const newEntry = { ...entry, id: makeId(), savedAt: Date.now() }
+    localStorage.setItem(HISTORY_KEY, JSON.stringify([newEntry, ...list]))
+    return newEntry
+  } catch {
+    return null
+  }
+}
+
+export function deleteHistoryItem(id) {
+  try {
+    const list = getHistory().filter(h => h.id !== id)
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list))
+  } catch (_) {}
 }
 
 export function clearHistory() {
