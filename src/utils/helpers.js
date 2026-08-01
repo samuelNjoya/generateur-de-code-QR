@@ -193,6 +193,18 @@ export const COUNTRY_CODES = [
   { code: '+7', flag: '🇷🇺', name: 'Russie' },
   { code: '+380', flag: '🇺🇦', name: 'Ukraine' },
   { code: '+31', flag: '🇳🇱', name: 'Pays-Bas' },
+  { code: '+46', flag: '🇸🇪', name: 'Suède' },
+  { code: '+47', flag: '🇳🇴', name: 'Norvège' },
+  { code: '+48', flag: '🇵🇱', name: 'Pologne' },
+  { code: '+351', flag: '🇵🇹', name: 'Portugal' },
+  { code: '+353', flag: '🇮🇪', name: 'Irlande' },
+  { code: '+358', flag: '🇫🇮', name: 'Finlande' },
+  { code: '+64', flag: '🇳🇿', name: 'Nouvelle-Zélande' },
+  { code: '+61', flag: '🇦🇺', name: 'Australie' },
+  { code: '+60', flag: '🇲🇾', name: 'Malaisie' },
+  { code: '+65', flag: '🇸🇬', name: 'Singapour' },
+  { code: '+66', flag: '🇹🇭', name: 'Thaïlande' },
+  { code: '+62', flag: '🇮🇩', name: 'Indonésie' },
 ]
 
 // ── Export utilities ─────────────────────────────────────────────────────────
