@@ -19,8 +19,12 @@ const APP_TABS = [
 
 function AppShell() {
   const [theme, setTheme] = useState(() => {
-    const saved = localStorage.getItem('qrpro_theme')
-    if (saved) return saved
+    try {
+      const saved = localStorage.getItem('qrpro_theme')
+      if (saved) return saved
+    } catch (e) {
+      console.error('Failed to read theme from localStorage', e)
+    }
     return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
   const [appTab, setAppTab] = useState('home')
@@ -28,7 +32,8 @@ function AppShell() {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem('qrpro_theme', theme)
+    // localStorage.setItem('qrpro_theme', theme)
+    try { localStorage.setItem('qrpro_theme', theme) } catch {}
   }, [theme])
 
   const toggleTheme = () => setTheme(t => (t === 'dark' ? 'light' : 'dark'))
