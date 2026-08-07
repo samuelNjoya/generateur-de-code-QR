@@ -1,10 +1,20 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'lucide-react'
 import { normalizeUrl, isValidUrl } from '../../utils/helpers'
 
-export function WebLinkForm({ onChange }) {
+export function WebLinkForm({ onChange, initialData, isEditing }) {
   const [url, setUrl] = useState('')
   const [valid, setValid] = useState(null)
+  const [initialized, setInitialized] = useState(false)
+
+  useEffect(() => {
+    if (isEditing && initialData && !initialized) {
+      setUrl(initialData)
+      setValid(isValidUrl(initialData))
+      onChange(initialData)
+      setInitialized(true)
+    }
+  }, [isEditing, initialData, initialized, onChange])
 
   const handleChange = (val) => {
     setUrl(val)

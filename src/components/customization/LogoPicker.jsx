@@ -19,9 +19,11 @@ function LogoPicker({ logo, onLogoChange }) {
     handleFileUpload(file)
   }, [handleFileUpload])
 
+  const isCustomLogo = logo && !DEFAULT_LOGOS.some(l => l.svg === logo)
+
   return (
     <div>
-      <label className="label">Logo central</label>
+      <label className="label">Choisir un logo</label>
       <div className="logo-grid">
         {DEFAULT_LOGOS.map(l => (
           <button
@@ -30,30 +32,32 @@ function LogoPicker({ logo, onLogoChange }) {
             onClick={() => onLogoChange(l.id === 'empty' ? null : l.svg)}
             title={l.name}
           >
-            <span className="logo-svg" dangerouslySetInnerHTML={{ __html: l.svg }} />
+            <span 
+              className="logo-svg-wrapper"
+              dangerouslySetInnerHTML={{ __html: l.svg }}
+            />
             <span className="logo-name">{l.name}</span>
           </button>
         ))}
 
-        {/* Upload personnalisé */}
         <button
-          className={`logo-item logo-item-upload ${dragging ? 'drag-over' : ''}`}
+          className={`logo-item logo-item-upload ${dragging ? 'drag-over' : ''} ${isCustomLogo ? 'active' : ''}`}
           onClick={() => document.getElementById('logo-file-input').click()}
           onDragOver={e => { e.preventDefault(); setDragging(true) }}
           onDragLeave={() => setDragging(false)}
           onDrop={handleDrop}
           title="Importer votre logo"
         >
-          {logo && !DEFAULT_LOGOS.some(l => l.svg === logo) ? (
+          {isCustomLogo ? (
             <>
-              <span className="logo-svg">
+              <span className="logo-svg-wrapper">
                 <img src={logo} alt="Logo personnalisé" className="logo-custom-preview" />
               </span>
               <span className="logo-name">Mon logo</span>
             </>
           ) : (
             <>
-              <span className="logo-svg logo-svg-placeholder">
+              <span className="logo-svg-wrapper logo-svg-placeholder">
                 <Plus size={18} strokeWidth={1.5} />
               </span>
               <span className="logo-name">Importer</span>
@@ -68,14 +72,6 @@ function LogoPicker({ logo, onLogoChange }) {
           onChange={e => handleFileUpload(e.target.files[0])}
         />
       </div>
-
-      {logo && DEFAULT_LOGOS.some(l => l.svg === logo) && (
-        <div className="logo-active-info">
-          <span className="logo-svg-sm" dangerouslySetInnerHTML={{ __html: logo }} />
-          <span>{DEFAULT_LOGOS.find(l => l.svg === logo)?.name} sélectionné</span>
-          <button className="btn-icon-sm" onClick={() => onLogoChange(null)}><X size={12} /></button>
-        </div>
-      )}
     </div>
   )
 }

@@ -1,14 +1,11 @@
 import { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, SlidersHorizontal, Image, Lock } from 'lucide-react'
-import Collapse from '../ui/Collapse'
+import { Palette, Box, Image, Lock, AlertTriangle } from 'lucide-react'
 import SegmentControl from '../ui/SegmentControl'
 import TemplateSelector from './TemplateSelector'
 import ColorPalettePicker from './ColorPalettePicker'
 import LogoPicker from './LogoPicker'
 import { QR_COLORS, BG_COLORS } from '../../data/colors'
 import { contrastWarning } from '../../utils/helpers'
-import { AlertTriangle } from 'lucide-react'
 
 const MODULE_SHAPES = [
   { id: 'square', label: 'Carré' },
@@ -22,7 +19,15 @@ const EYE_SHAPES = [
   { id: 'circle', label: 'Cercle' },
 ]
 
+const TABS = [
+  { id: 'colors', label: 'Couleurs', Icon: Palette },
+  { id: 'shapes', label: 'Formes', Icon: Box },
+  { id: 'logo', label: 'Logo', Icon: Image },
+  { id: 'security', label: 'Sécurité', Icon: Lock },
+]
+
 function CustomizationPanel({ style, onStyleChange, onLogoChange, logo, data, password, onPasswordChange }) {
+  const [activeTab, setActiveTab] = useState('colors')
   const [showPass, setShowPass] = useState(false)
   const warning = contrastWarning(style.fgColor, style.bgColor)
 
@@ -36,101 +41,109 @@ function CustomizationPanel({ style, onStyleChange, onLogoChange, logo, data, pa
     })
   }
 
+  const ActiveIcon = TABS.find(t => t.id === activeTab)?.Icon
+
   return (
-    <div>
-      <Collapse
-        icon={SlidersHorizontal}
-        label="Personnalisation"
-        badge="Optionnel"
-        defaultOpen={false}
-      >
-        <div className="customization-content">
-          {/* Templates */}
-          <TemplateSelector currentStyle={style} onSelectTemplate={handleTemplateSelect} />
+    <div className="customization-v2">
+      {/* Tabs */}
+      <div className="custom-tabs">
+        {TABS.map(tab => (
+          <button
+            key={tab.id}
+            className={`custom-tab ${activeTab === tab.id ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            <tab.Icon size={16} strokeWidth={1.5} />
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
 
-          <div className="divider-sm" />
+      {/* Tab content */}
+      <div className="custom-tab-content">
+        {activeTab === 'colors' && (
+          <div className="custom-tab-panel">
+            <TemplateSelector currentStyle={style} onSelectTemplate={handleTemplateSelect} />
+            
+            <div className="divider-sm" />
 
-          {/* Forme des modules */}
-          <div className="field">
-            <label className="label">Forme des modules</label>
-            <SegmentControl options={MODULE_SHAPES} value={style.moduleShape} onChange={(val) => onStyleChange({ moduleShape: val })} />
-          </div>
+            <ColorPalettePicker
+              label="Couleur du QR"
+              colors={QR_COLORS}
+              value={style.fgColor}
+              onChange={(fgColor) => onStyleChange({ fgColor })}
+            />
 
-          {/* Style des yeux */}
-          <div className="field">
-            <label className="label">Style des yeux (coins)</label>
-            <SegmentControl options={EYE_SHAPES} value={style.eyeShape} onChange={(val) => onStyleChange({ eyeShape: val })} />
-          </div>
+            <div className="divider-sm" />
 
-          {/* Marge */}
-          <div className="field">
-            <div className="range-header">
-              <label className="label" style={{ marginBottom: 0 }}>Marge silencieuse</label>
-              <span className="range-value">{style.margin}px</span>
-            </div>
-            <input type="range" min="2" max="8" step="1" value={style.margin} onChange={e => onStyleChange({ margin: parseInt(e.target.value) })} />
-          </div>
+            <ColorPalettePicker
+              label="Couleur du fond"
+              colors={BG_COLORS}
+              value={style.bgColor}
+              onChange={(bgColor) => onStyleChange({ bgColor })}
+            />
 
-          <div className="divider-sm" />
-
-          {/* Palette couleurs QR */}
-          <ColorPalettePicker
-            label="Couleur du QR"
-            colors={QR_COLORS}
-            value={style.fgColor}
-            onChange={(fgColor) => onStyleChange({ fgColor })}
-            icon={null}
-          />
-
-          <div className="field-spacer" />
-
-          {/* Palette couleurs fond */}
-          <ColorPalettePicker
-            label="Couleur du fond"
-            colors={BG_COLORS}
-            value={style.bgColor}
-            onChange={(bgColor) => onStyleChange({ bgColor })}
-            icon={null}
-          />
-
-          {warning && (
-            <div className={`contrast-warning ${warning.level === 'error' ? 'contrast-error' : 'contrast-warn'}`}>
-              <AlertTriangle size={13} strokeWidth={1.5} />
-              {warning.msg}
-            </div>
-          )}
-
-          <div className="divider-sm" />
-
-          {/* Logo */}
-          <LogoPicker logo={logo} onLogoChange={onLogoChange} />
-
-          <div className="divider-sm" />
-
-          {/* Password protection */}
-          <div className="field">
-            <label className="label">
-              <Lock size={13} strokeWidth={1.5} /> Protéger par mot de passe
-            </label>
-            <div className="input-icon-wrapper">
-              <span className="input-icon"><Lock size={15} strokeWidth={1.5} /></span>
-              <input
-                className="input-with-icon input-with-suffix"
-                type={showPass ? 'text' : 'password'}
-                placeholder="Laisser vide pour ne pas protéger"
-                value={password || ''}
-                onChange={e => onPasswordChange(e.target.value)}
-              />
-              <button type="button" className="input-suffix-btn" onClick={() => setShowPass(v => !v)}>
-                {showPass ? 'Cacher' : 'Voir'}
-              </button>
-            </div>
-            {password && (
-              <p className="field-hint">Le contenu sera chiffré localement. Il faudra ce mot de passe pour le révéler au scan.</p>
+            {warning && (
+              <div className={`contrast-warning ${warning.level === 'error' ? 'contrast-error' : 'contrast-warn'}`}>
+                <AlertTriangle size={13} strokeWidth={1.5} />
+                {warning.msg}
+              </div>
             )}
           </div>
-        </div>
-      </Collapse>
+        )}
+
+        {activeTab === 'shapes' && (
+          <div className="custom-tab-panel">
+            <div className="field">
+              <label className="label">Forme des modules</label>
+              <SegmentControl options={MODULE_SHAPES} value={style.moduleShape} onChange={(val) => onStyleChange({ moduleShape: val })} />
+            </div>
+
+            <div className="field">
+              <label className="label">Style des coins</label>
+              <SegmentControl options={EYE_SHAPES} value={style.eyeShape} onChange={(val) => onStyleChange({ eyeShape: val })} />
+            </div>
+
+            <div className="field">
+              <div className="range-header">
+                <label className="label" style={{ marginBottom: 0 }}>Marge</label>
+                <span className="range-value">{style.margin}px</span>
+              </div>
+              <input type="range" min="2" max="8" step="1" value={style.margin} onChange={e => onStyleChange({ margin: parseInt(e.target.value) })} />
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'logo' && (
+          <div className="custom-tab-panel">
+            <LogoPicker logo={logo} onLogoChange={onLogoChange} />
+          </div>
+        )}
+
+        {activeTab === 'security' && (
+          <div className="custom-tab-panel">
+            <div className="field">
+              <label className="label">Mot de passe de protection</label>
+              <div className="input-icon-wrapper">
+                <span className="input-icon"><Lock size={15} strokeWidth={1.5} /></span>
+                <input
+                  className="input-with-icon input-with-suffix"
+                  type={showPass ? 'text' : 'password'}
+                  placeholder="Laisser vide pour ne pas protéger"
+                  value={password || ''}
+                  onChange={e => onPasswordChange(e.target.value)}
+                />
+                <button type="button" className="input-suffix-btn" onClick={() => setShowPass(v => !v)}>
+                  {showPass ? 'Cacher' : 'Voir'}
+                </button>
+              </div>
+              {password && (
+                <p className="field-hint">Le contenu sera chiffré. Mot de passe requis au scan pour le révéler.</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

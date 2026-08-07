@@ -9,25 +9,29 @@ import { saveToHistory } from '../utils/helpers'
 import { encryptPayload } from '../utils/security'
 
 function GeneratorScreen({ type, editingItem, onBack }) {
-  const [step, setStep] = useState('form') // 'form' | 'preview'
+  const [step, setStep] = useState('form')
   const [qrData, setQrData] = useState('')
   const [finalData, setFinalData] = useState('')
   const [qrTitle, setQrTitle] = useState('')
   const [logo, setLogo] = useState(null)
   const [password, setPassword] = useState('')
   const [savedId, setSavedId] = useState(null)
+  const [formReady, setFormReady] = useState(false)
   const showToast = useToast()
   const { svgString, isGenerating, style, updateStyle, generate } = useQRGenerator()
 
+  // Prefill from editing
   useEffect(() => {
     if (!editingItem) return
     setQrTitle(editingItem.label || '')
     setQrData(editingItem.data)
     setPassword('')
     setSavedId(editingItem.id)
-    setStep('preview')
+    setFormReady(true)
+    setStep('form')
   }, [editingItem])
 
+  // Encrypt if password is set
   useEffect(() => {
     let cancelled = false
     async function run() {
@@ -36,8 +40,7 @@ function GeneratorScreen({ type, editingItem, onBack }) {
         try {
           const enc = await encryptPayload(qrData, password)
           if (!cancelled) setFinalData(enc)
-        } catch (e) {
-          console.error(e)
+        } catch {
           if (!cancelled) setFinalData(qrData)
         }
       } else if (!cancelled) {
@@ -48,6 +51,7 @@ function GeneratorScreen({ type, editingItem, onBack }) {
     return () => { cancelled = true }
   }, [qrData, password])
 
+  // Generate QR in preview step
   useEffect(() => {
     if (step === 'preview') {
       generate(finalData, logo, style)
@@ -56,6 +60,7 @@ function GeneratorScreen({ type, editingItem, onBack }) {
 
   const handleDataChange = useCallback((data) => {
     setQrData(data)
+    setFormReady(false)
   }, [])
 
   const handleGenerate = () => {
@@ -72,7 +77,7 @@ function GeneratorScreen({ type, editingItem, onBack }) {
     const saved = saveToHistory({ data: finalData, type: type.id, label: qrTitle }, savedId)
     if (saved) {
       setSavedId(saved.id)
-      showToast(savedId ? 'QR mis à jour ✓' : 'QR enregistré ✓')
+      showToast(savedId ? 'QR mis à jour' : 'QR enregistré')
       onBack()
     }
   }
@@ -112,7 +117,11 @@ function GeneratorScreen({ type, editingItem, onBack }) {
             />
           </div>
 
-          <CurrentForm onChange={handleDataChange} />
+          <CurrentForm 
+            onChange={handleDataChange} 
+            initialData={editingItem?.data || ''}
+            isEditing={!!editingItem && formReady}
+          />
 
           <div className="divider" />
 
@@ -126,7 +135,6 @@ function GeneratorScreen({ type, editingItem, onBack }) {
     )
   }
 
-  // Step 'preview'
   return (
     <div className="generator-screen">
       <div className="page-header">
@@ -138,7 +146,7 @@ function GeneratorScreen({ type, editingItem, onBack }) {
         </div>
         <div>
           <p className="section-title" style={{ marginBottom: 2 }}>{type.label}</p>
-          <p className="section-sub" style={{ marginBottom: 0 }}>Personnalisez et enregistrez votre QR</p>
+          <p className="section-sub" style={{ marginBottom: 0 }}>Personnalisez et enregistrez</p>
         </div>
       </div>
 
@@ -148,32 +156,31 @@ function GeneratorScreen({ type, editingItem, onBack }) {
         <span className="step-dot active">2</span>
       </div>
 
-      <Card style={{ padding: 22, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+      {/* QR fixe en haut */}
+      <div className="qr-preview-fixed">
         <QRPreview svgString={svgString} title={qrTitle} isGenerating={isGenerating} />
-      </Card>
+      </div>
 
-      <Card className="form-card" style={{ padding: 20 }}>
-        <CustomizationPanel
-          style={style}
-          onStyleChange={updateStyle}
-          onLogoChange={setLogo}
-          logo={logo}
-          data={qrData}
-          password={password}
-          onPasswordChange={setPassword}
-        />
+      {/* Personnalisation en onglets */}
+      <CustomizationPanel
+        style={style}
+        onStyleChange={updateStyle}
+        onLogoChange={setLogo}
+        logo={logo}
+        data={qrData}
+        password={password}
+        onPasswordChange={setPassword}
+      />
 
-        <div className="divider" />
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn-ghost" style={{ flex: 1 }} onClick={handleBackToForm}>
-            <ArrowLeft size={16} strokeWidth={1.75} /> Modifier
-          </button>
-          <button className="btn-primary" style={{ flex: 1 }} onClick={handleSave} disabled={!finalData}>
-            {savedId ? <RefreshCw size={16} strokeWidth={1.75} /> : <Save size={16} strokeWidth={1.75} />}
-            {savedId ? 'Mettre à jour' : 'Enregistrer'}
-          </button>
-        </div>
-      </Card>
+      <div style={{ display: 'flex', gap: 8, marginTop: 16, paddingBottom: 24 }}>
+        <button className="btn-ghost" style={{ flex: 1 }} onClick={handleBackToForm}>
+          <ArrowLeft size={16} strokeWidth={1.75} /> Modifier
+        </button>
+        <button className="btn-primary" style={{ flex: 1 }} onClick={handleSave} disabled={!finalData}>
+          {savedId ? <RefreshCw size={16} strokeWidth={1.75} /> : <Save size={16} strokeWidth={1.75} />}
+          {savedId ? 'Mettre à jour' : 'Enregistrer'}
+        </button>
+      </div>
     </div>
   )
 }
