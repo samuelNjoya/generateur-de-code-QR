@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, UserSquare2, MessageCircle, Wifi, MapPin, CalendarDays, Mail, Smartphone, Type, Package, ChevronRight } from 'lucide-react'
 
-import { WebLinkForm, VCardForm, WhatsAppForm, WiFiForm, GPSForm, EventForm, EmailForm, USSDForm, TextForm } from '../components/Forms'
+import { WebLinkForm, VCardForm, WhatsAppForm, WiFiForm, GPSForm, EventForm, EmailForm, USSDForm, TextForm } from '../components/forms'
 import { useToast } from '../hooks/useToast'
 import GeneratorScreen from './GeneratorScreen'
 import BatchScreen from './BatchScreen'

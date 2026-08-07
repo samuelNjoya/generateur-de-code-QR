@@ -5,6 +5,7 @@ import Sidebar from './components/layout/Sidebar'
 import ShellHeader from './components/layout/ShellHeader'
 import BottomTabBar from './components/layout/BottomTabBar'
 import { ToastProvider } from './hooks/useToast'
+import { useSecureStorage } from './hooks/useSecureStorage'
 import HomeScreen from './screens/HomeScreen'
 import ScanScreen from './screens/ScanScreen'
 import LibraryScreen from './screens/LibraryScreen'
@@ -18,22 +19,24 @@ const APP_TABS = [
 ]
 
 function AppShell() {
+  const { getItem, setItem } = useSecureStorage()
+
   const [theme, setTheme] = useState(() => {
+    const saved = getItem('qrpro_theme')
+    if (saved) return saved
     try {
-      const saved = localStorage.getItem('qrpro_theme')
-      if (saved) return saved
-    } catch (e) {
-      console.error('Failed to read theme from localStorage', e)
+      return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    } catch {
+      return 'light'
     }
-    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
+
   const [appTab, setAppTab] = useState('home')
   const [restoreSignal, setRestoreSignal] = useState(null)
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
-    // localStorage.setItem('qrpro_theme', theme)
-    try { localStorage.setItem('qrpro_theme', theme) } catch {}
+    setItem('qrpro_theme', theme)
   }, [theme])
 
   const toggleTheme = () => setTheme(t => (t === 'dark' ? 'light' : 'dark'))
@@ -59,9 +62,6 @@ function AppShell() {
         />
 
         <div className="shell-content">
-          {/* Home, Library & Profile stay mounted across tab switches so their state
-              persists (like a native app); only the Scanner mounts/unmounts to
-              control the camera lifecycle. */}
           <div style={{ display: appTab === 'home' ? 'block' : 'none' }}>
             <HomeScreen restoreSignal={restoreSignal} />
           </div>
