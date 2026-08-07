@@ -7,6 +7,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+       // DÉSACTIVER le service worker pour tester
+      injectRegister: false,
+      selfDestroying: true,
       includeAssets: ['icon.png', 'apple-touch-icon.png'],
       manifest: {
         id: '/',
