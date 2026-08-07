@@ -8,13 +8,13 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
        // DÉSACTIVER le service worker pour tester
-      injectRegister: false,
-      selfDestroying: true,
+      // injectRegister: false,
+      // selfDestroying: true,
       includeAssets: ['icon.png', 'apple-touch-icon.png'],
       manifest: {
         id: '/',
         name: 'QR Pro — Générateur de QR Codes',
-        short_name: 'QR Pro',
+        short_name: 'SmartQR Pro',
         description: 'Générateur et scanner de QR Codes professionnel, installable et utilisable hors-ligne.',
         theme_color: '#4433d6',
         background_color: '#4433d6',
